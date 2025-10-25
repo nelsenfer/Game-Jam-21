@@ -1,90 +1,105 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private GameObject SwordFish;
     private Vector3 moveDirection;
-    [SerializeField] private float speed;
-    public AudioClip collisions;
-    private int Heart;
-    Rigidbody2D rb;
-    public Transform shipTarget; // titik kapal tempat ikan mendarat
-    public float jumpDuration = 1.5f, jumpHeight = 2f;     // tinggi loncatan
-    private bool isJumping = false;
+    [SerializeField] private float speed = 5f;
+    private int Heart = 3;
+    private Rigidbody2D rb;
 
-    void Start() 
+    public GameObject[] shipTarget;
+    private int indexShip = 0;
+
+    public float jumpDuration = 1.5f;
+    public float jumpHeight = 2f;
+
+    private bool isJumping = false;
+    private bool canJump = true; // <-- tambahan: agar hanya bisa lompat sekali
+    private float jumpTimer = 0f;
+    private Vector3 jumpStartPos;
+    private Vector3 jumpEndPos;
+
+    void Start()
     {
-        //Cursor.visible = false;  
         rb = GetComponent<Rigidbody2D>();
-        Heart = 3;
     }
 
     void Update()
     {
-        float InputY = Input.GetAxis("Vertical");
-        float InputX = Input.GetAxis("Horizontal");
+        float inputY = Input.GetAxis("Vertical");
+        float inputX = Input.GetAxis("Horizontal");
+        moveDirection = new Vector3(inputX, inputY, 0f);
 
-        moveDirection = new Vector3(InputX, InputY, 0f); 
+        // hanya bisa bergerak kalau tidak sedang lompat
+        if (!isJumping)
+        {
+            transform.position += moveDirection * speed * Time.deltaTime;
 
-        
-        if (transform.position.y > 2.5f)
+            // deteksi naik ke permukaan → hanya kalau boleh lompat
+            if (transform.position.y > 2.5f && canJump)
             {
-                rb.gravityScale = 1; // hidupkan gravitasi
-                StartCoroutine(JumpToShip());
+                StartJump();
             }
-        else if (transform.position.y < 2.3f)
-            {
-                rb.gravityScale = 0; // matikan gravitasi
-                rb.velocity = new Vector2(rb.velocity.x, 0f);
-            }
+        }
+        else
+        {
+            UpdateJump();
+        }
 
-
+        // jika sudah kembali ke air, reset izin lompat
+        if (transform.position.y < 2.3f)
+        {
+            rb.gravityScale = 0;
+            rb.velocity = Vector2.zero;
+            canJump = true; // sekarang boleh lompat lagi
+        }
     }
-    
-    void FixedUpdate()
+
+    void StartJump()
     {
-        transform.position += moveDirection * speed * Time.deltaTime;
+        if (isJumping) return;
+
+        isJumping = true;
+        canJump = false; // tidak boleh lompat lagi sampai jatuh ke air
+        jumpTimer = 0f;
+        jumpStartPos = transform.position;
+        jumpEndPos = shipTarget[indexShip].transform.position;
+
+        rb.gravityScale = 0;
+        rb.velocity = Vector2.zero;
+
+        Debug.Log("Mulai lompat ke kapal!");
+    }
+
+    void UpdateJump()
+    {
+        jumpTimer += Time.deltaTime;
+        float t = jumpTimer / jumpDuration;
+
+        if (t >= 1f)
+        {
+            // selesai lompat → aktifkan gravitasi untuk jatuh bebas
+            transform.position = jumpEndPos;
+            rb.gravityScale = 1;
+            isJumping = false;
+            Debug.Log("Mendarat di kapal, mulai jatuh bebas!");
+            return;
+        }
+
+        // gerak lerp dengan parabola
+        Vector3 flatLerp = Vector3.Lerp(jumpStartPos, jumpEndPos, t);
+        float parabola = Mathf.Sin(t * Mathf.PI) * jumpHeight;
+        flatLerp.y += parabola;
+
+        transform.position = flatLerp;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
     {
-        if(collision.tag == "SwordFish")
+        if (collision.CompareTag("SwordFish"))
         {
             Debug.Log("SwordFish");
-            Heart --;
+            Heart--;
         }
-    }
-
-    IEnumerator JumpToShip()
-    {
-        isJumping = true;
-
-        Vector3 startPos = transform.position;
-        Vector3 endPos = shipTarget.position;
-        float time = 0f;
-
-        while (time < jumpDuration)
-        {
-            time += Time.deltaTime;
-            float t = time / jumpDuration; // progress 0 -> 1
-
-            // Lerp posisi dasar (lurus)
-            Vector3 flatLerp = Vector3.Lerp(startPos, endPos, t);
-
-            // Tambahkan efek parabola di sumbu Y
-            float parabola = Mathf.Sin(t * Mathf.PI) * jumpHeight;
-            flatLerp.y += parabola;
-
-            transform.position = flatLerp;
-            yield return null;
-        }
-
-        transform.position = endPos;
-        isJumping = false;
-
-        // (Opsional) bisa tambahkan event setelah landing
-        Debug.Log("Ikan mendarat di kapal!");
     }
 }
