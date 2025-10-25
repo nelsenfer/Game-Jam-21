@@ -21,13 +21,14 @@ public class Player : MonoBehaviour
     public GameObject DeathCanvas;
     private Vector3 zeroVector = Vector3.zero;
     public GameObject checkPoint;
-
+    public bool isReverse; private int dirReverse = 0; // buat reverse control mechanic
+                            //  1 = Reverse antara kiri dan kanan
+                            //  2 = Reverse antara atas dan bawah
+                            //  3 = Semua
+    private float uniInputY, uniInputX;
     SpriteRenderer sr;
 
     Animator animator;
-
-    //buat nge reverse kontol, eh kontrol
-    private bool reversedX, reversedY;
 
 
     void Start()
@@ -76,10 +77,44 @@ public class Player : MonoBehaviour
         }
     }
 
+
+    //Mekanik reverse controll
+    void ReverseControl()
+    {
+        if (isReverse == true && dirReverse == 1)
+        {
+            uniInputY = Input.GetAxis("Vertical");
+            uniInputX = Input.GetAxis("Horizontal") * -1;
+        }
+        if (isReverse == true && dirReverse == 2)
+        {
+            uniInputY = Input.GetAxis("Vertical") * -1;
+            uniInputX = Input.GetAxis("Horizontal");
+        }
+        if (isReverse == true && dirReverse == 3)
+        {
+            uniInputX = Input.GetAxis("Vertical") * -1;
+            uniInputY = Input.GetAxis("Horizontal") * -1;
+        }
+
+
+
+        if (isReverse == false)
+        {
+            uniInputY = Input.GetAxis("Vertical");
+            uniInputX = Input.GetAxis("Horizontal");
+        }
+    }
+
     void FixedUpdate() //     NOTEDDDDDDDDDDD     WOYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
     {
-        float inputY = Input.GetAxis("Vertical");
-        float inputX = Input.GetAxis("Horizontal");
+        ReverseControl();
+        float inputY = 0;
+        if (transform.position.y <= 3f)
+        {
+            inputY = uniInputY;
+        }
+        float inputX = uniInputX;
 
         moveDirection = new Vector3(inputX, inputY, 0f);
         if (inputX != 0 || inputY != 0)
@@ -177,6 +212,19 @@ public class Player : MonoBehaviour
         if (collision.CompareTag("Portal"))
         {
             Debug.Log("jkshadu");
+
+            if(isReverse == true)
+            {
+                isReverse = false;
+            }
+            else if(isReverse == false)
+            {
+                isReverse = true;
+            }
+
+            dirReverse = 1;
+
+            Destroy(collision.gameObject);
         }
     }
 }
