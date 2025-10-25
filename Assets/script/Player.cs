@@ -7,17 +7,18 @@ public class Player : MonoBehaviour
     private int Heart = 3;
     private Rigidbody2D rb;
 
-    public GameObject[] shipTarget;
-    private int indexShip = 0;
+    public GameObject[] shipTarget; // daftar semua kapal
+    private GameObject nearestShip; // kapal terdekat yang sedang dituju
 
     public float jumpDuration = 1.5f;
     public float jumpHeight = 2f;
 
     private bool isJumping = false;
-    private bool canJump = true; // <-- tambahan: agar hanya bisa lompat sekali
+    private bool canJump = true;
     private float jumpTimer = 0f;
     private Vector3 jumpStartPos;
     private Vector3 jumpEndPos;
+    public GameObject DeathCanvas;
 
     void Start()
     {
@@ -26,10 +27,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        float inputY = Input.GetAxis("Vertical");
-        float inputX = Input.GetAxis("Horizontal");
-        moveDirection = new Vector3(inputX, inputY, 0f);
-
+        
         // hanya bisa bergerak kalau tidak sedang lompat
         if (!isJumping)
         {
@@ -38,7 +36,11 @@ public class Player : MonoBehaviour
             // deteksi naik ke permukaan → hanya kalau boleh lompat
             if (transform.position.y > 2.5f && canJump)
             {
-                StartJump();
+                nearestShip = FindNearestShip();
+                if (nearestShip != null)
+                {
+                    StartJump(nearestShip.transform.position);
+                }
             }
         }
         else
@@ -51,24 +53,59 @@ public class Player : MonoBehaviour
         {
             rb.gravityScale = 0;
             rb.velocity = Vector2.zero;
-            canJump = true; // sekarang boleh lompat lagi
+            canJump = true;
+        }
+
+        if (Heart == 0)
+        {
+            DeathCanvas.SetActive(true);
+            Destroy(this.gameObject);
         }
     }
 
-    void StartJump()
+    void FixedUpdate()
+    {
+        float inputY = Input.GetAxis("Vertical");
+        float inputX = Input.GetAxis("Horizontal");
+
+        moveDirection = new Vector3(inputX, inputY, 0f);
+    }
+
+    // Mendeteksi kapal terdekat
+    GameObject FindNearestShip()
+    {
+        GameObject nearest = null;
+        float minDistance = Mathf.Infinity;
+        Vector3 currentPos = transform.position;
+
+        foreach (GameObject ship in shipTarget)
+        {
+            if (ship == null) continue;
+            float distance = Vector3.Distance(currentPos, ship.transform.position);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearest = ship;
+            }
+        }
+
+        return nearest;
+    }
+
+    void StartJump(Vector3 targetPos)
     {
         if (isJumping) return;
 
         isJumping = true;
-        canJump = false; // tidak boleh lompat lagi sampai jatuh ke air
+        canJump = false;
         jumpTimer = 0f;
         jumpStartPos = transform.position;
-        jumpEndPos = shipTarget[indexShip].transform.position;
+        jumpEndPos = targetPos;
 
         rb.gravityScale = 0;
         rb.velocity = Vector2.zero;
 
-        Debug.Log("Mulai lompat ke kapal!");
+        Debug.Log("Mulai lompat ke kapal terdekat!");
     }
 
     void UpdateJump()
@@ -78,7 +115,6 @@ public class Player : MonoBehaviour
 
         if (t >= 1f)
         {
-            // selesai lompat → aktifkan gravitasi untuk jatuh bebas
             transform.position = jumpEndPos;
             rb.gravityScale = 1;
             isJumping = false;
