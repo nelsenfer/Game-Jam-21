@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 4824582594591315219}
   - component: {fileID: 7045921950102291176}
   - component: {fileID: 72436274283395751}
+  - component: {fileID: -4427658397754311351}
   m_Layer: 0
   m_Name: SwordFish(Parent)
   m_TagString: SwordFish
@@ -106,6 +107,21 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 3.8212507, y: 1.2167325}
   m_EdgeRadius: 0
+--- !u!114 &-4427658397754311351
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5837523760778115728}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 72e4e2b6ae3ee6641b77a343402533d9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  player: {fileID: 1826514225471015572, guid: 58ddfafd05666dd47b18b88ea6511020, type: 3}
+  WarningSprite: {fileID: 3222610726525195276, guid: b18cb7ba92d86a94788e7112bb5dc1ac, type: 3}
+  distanceX: 5
 --- !u!1 &7105634274480543274
 GameObject:
   m_ObjectHideFlags: 0
@@ -178,7 +194,7 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
+  m_SortingOrder: 2
   m_Sprite: {fileID: 21300000, guid: 888df38cdb4b6364b85515ec52580863, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0

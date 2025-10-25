@@ -19,11 +19,16 @@ public class Player : MonoBehaviour
     private Vector3 jumpStartPos;
     private Vector3 jumpEndPos;
     public GameObject DeathCanvas;
-private Vector3 zeroVector = Vector3.zero;
+    private Vector3 zeroVector = Vector3.zero;
+    public GameObject checkPoint;
 
     SpriteRenderer sr;
 
     Animator animator;
+
+    //buat nge reverse kontol, eh kontrol
+    private bool reversedX, reversedY;
+
 
     void Start()
     {
@@ -71,7 +76,7 @@ private Vector3 zeroVector = Vector3.zero;
         }
     }
 
-    void FixedUpdate()
+    void FixedUpdate() //     NOTEDDDDDDDDDDD     WOYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
     {
         float inputY = Input.GetAxis("Vertical");
         float inputX = Input.GetAxis("Horizontal");
@@ -156,6 +161,7 @@ private Vector3 zeroVector = Vector3.zero;
         flatLerp.y += parabola;
 
         transform.position = flatLerp;
+        checkPoint.transform.position = transform.position;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -164,6 +170,13 @@ private Vector3 zeroVector = Vector3.zero;
         {
             Debug.Log("SwordFish");
             Heart--;
+
+            this.transform.position = checkPoint.transform.position;
+        }
+
+        if (collision.CompareTag("Portal"))
+        {
+            Debug.Log("jkshadu");
         }
     }
 }
