@@ -4,20 +4,19 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    Vector2 CameraWorldScale;
     private GameObject SwordFish;
     private Vector3 moveDirection;
     [SerializeField] private float speed;
     public AudioClip collisions;
     private int Heart;
     Rigidbody2D rb;
+    public Transform shipTarget; // titik kapal tempat ikan mendarat
+    public float jumpDuration = 1.5f, jumpHeight = 2f;     // tinggi loncatan
+    private bool isJumping = false;
 
     void Start() 
     {
-        //Cursor.visible = false;
-        CameraWorldScale = Camera.main.ScreenToWorldPoint //
-        (new Vector3(Screen.width, Screen.height,         //
-        Camera.main.transform.position.z));               //
+        //Cursor.visible = false;  
         rb = GetComponent<Rigidbody2D>();
         Heart = 3;
     }
@@ -29,31 +28,24 @@ public class Player : MonoBehaviour
 
         moveDirection = new Vector3(InputX, InputY, 0f); 
 
-        if (Input.GetKeyDown(KeyCode.G))
-        {
-           if (rb.gravityScale == 0)
+        
+        if (transform.position.y > 2.5f)
             {
                 rb.gravityScale = 1; // hidupkan gravitasi
+                StartCoroutine(JumpToShip());
             }
-            else
+        else if (transform.position.y < 2.3f)
             {
                 rb.gravityScale = 0; // matikan gravitasi
+                rb.velocity = new Vector2(rb.velocity.x, 0f);
             }
 
-        }
+
     }
     
     void FixedUpdate()
     {
         transform.position += moveDirection * speed * Time.deltaTime;
-    }
-
-    void LateUpdate()
-    {
-        //Vector3 viewPos = transform.position;
-        //viewPos.x = Mathf.Clamp(viewPos.x, CameraWorldScale.x * -1, CameraWorldScale.x);
-       // viewPos.y = Mathf.Clamp(viewPos.y, CameraWorldScale.y * -1, CameraWorldScale.y);
-        //transform.position = viewPos;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -63,5 +55,36 @@ public class Player : MonoBehaviour
             Debug.Log("SwordFish");
             Heart --;
         }
+    }
+
+    IEnumerator JumpToShip()
+    {
+        isJumping = true;
+
+        Vector3 startPos = transform.position;
+        Vector3 endPos = shipTarget.position;
+        float time = 0f;
+
+        while (time < jumpDuration)
+        {
+            time += Time.deltaTime;
+            float t = time / jumpDuration; // progress 0 -> 1
+
+            // Lerp posisi dasar (lurus)
+            Vector3 flatLerp = Vector3.Lerp(startPos, endPos, t);
+
+            // Tambahkan efek parabola di sumbu Y
+            float parabola = Mathf.Sin(t * Mathf.PI) * jumpHeight;
+            flatLerp.y += parabola;
+
+            transform.position = flatLerp;
+            yield return null;
+        }
+
+        transform.position = endPos;
+        isJumping = false;
+
+        // (Opsional) bisa tambahkan event setelah landing
+        Debug.Log("Ikan mendarat di kapal!");
     }
 }
