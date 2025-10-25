@@ -6,7 +6,7 @@ public class CameraFollow : MonoBehaviour
     [SerializeField] private float smoothSpeed = 2f;  // semakin besar semakin cepat mengejar
     [SerializeField] private Vector2 offset;     // posisi relatif dari player
 
-    private void LateUpdate()
+    private void FixedUpdate()
     {
         if (player == null) return;
 
@@ -20,6 +20,6 @@ public class CameraFollow : MonoBehaviour
         Vector2 smoothPosition = Vector2.Lerp(currentPosition, targetPosition, smoothSpeed * Time.deltaTime);
 
         // update posisi kamera, z tetap
-        transform.position = new Vector3(smoothPosition.x, smoothPosition.y, transform.position.z);
+        transform.position = new Vector3(smoothPosition.x, smoothPosition.y, -3);
     }
 }
