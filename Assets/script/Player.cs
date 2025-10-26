@@ -19,11 +19,17 @@ public class Player : MonoBehaviour
     private Vector3 jumpStartPos;
     private Vector3 jumpEndPos;
     public GameObject DeathCanvas;
-private Vector3 zeroVector = Vector3.zero;
-
+    private Vector3 zeroVector = Vector3.zero;
+    public GameObject checkPoint;
+    public bool isReverse; private int dirReverse = 0; // buat reverse control mechanic
+                            //  1 = Reverse antara kiri dan kanan
+                            //  2 = Reverse antara atas dan bawah
+                            //  3 = Semua
+    private float uniInputY, uniInputX;
     SpriteRenderer sr;
 
     Animator animator;
+
 
     void Start()
     {
@@ -71,10 +77,44 @@ private Vector3 zeroVector = Vector3.zero;
         }
     }
 
-    void FixedUpdate()
+
+    //Mekanik reverse controll
+    void ReverseControl()
     {
-        float inputY = Input.GetAxis("Vertical");
-        float inputX = Input.GetAxis("Horizontal");
+        if (isReverse == true && dirReverse == 1)
+        {
+            uniInputY = Input.GetAxis("Vertical");
+            uniInputX = Input.GetAxis("Horizontal") * -1;
+        }
+        if (isReverse == true && dirReverse == 2)
+        {
+            uniInputY = Input.GetAxis("Vertical") * -1;
+            uniInputX = Input.GetAxis("Horizontal");
+        }
+        if (isReverse == true && dirReverse == 3)
+        {
+            uniInputX = Input.GetAxis("Vertical") * -1;
+            uniInputY = Input.GetAxis("Horizontal") * -1;
+        }
+
+
+
+        if (isReverse == false)
+        {
+            uniInputY = Input.GetAxis("Vertical");
+            uniInputX = Input.GetAxis("Horizontal");
+        }
+    }
+
+    void FixedUpdate() //     NOTEDDDDDDDDDDD     WOYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+    {
+        ReverseControl();
+        float inputY = 0;
+        if (transform.position.y <= 3f)
+        {
+            inputY = uniInputY;
+        }
+        float inputX = uniInputX;
 
         moveDirection = new Vector3(inputX, inputY, 0f);
         if (inputX != 0 || inputY != 0)
@@ -156,6 +196,7 @@ private Vector3 zeroVector = Vector3.zero;
         flatLerp.y += parabola;
 
         transform.position = flatLerp;
+        checkPoint.transform.position = transform.position;
     }
 
     void OnTriggerEnter2D(Collider2D collision)
@@ -164,6 +205,26 @@ private Vector3 zeroVector = Vector3.zero;
         {
             Debug.Log("SwordFish");
             Heart--;
+
+            this.transform.position = checkPoint.transform.position;
+        }
+
+        if (collision.CompareTag("Portal"))
+        {
+            Debug.Log("jkshadu");
+
+            if(isReverse == true)
+            {
+                isReverse = false;
+            }
+            else if(isReverse == false)
+            {
+                isReverse = true;
+            }
+
+            dirReverse = 1;
+
+            Destroy(collision.gameObject);
         }
     }
 }
