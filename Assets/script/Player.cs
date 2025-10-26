@@ -1,10 +1,11 @@
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class Player : MonoBehaviour
 {
     private Vector3 moveDirection;
     [SerializeField] private float speed = 5f;
-    private int Heart = 3;
+    public int heart = 3;
     private Rigidbody2D rb;
 
     public GameObject[] shipTarget; // daftar semua kapal
@@ -21,14 +22,17 @@ public class Player : MonoBehaviour
     public GameObject DeathCanvas;
     private Vector3 zeroVector = Vector3.zero;
     public GameObject checkPoint;
-    public bool isReverse; private int dirReverse = 0; // buat reverse control mechanic
-                            //  1 = Reverse antara kiri dan kanan
-                            //  2 = Reverse antara atas dan bawah
-                            //  3 = Semua
+    private bool isReverse; private int dirReverse = 0; // buat reverse control mechanic
+                                                        //  1 = Reverse antara kiri dan kanan
+                                                        //  2 = Reverse antara atas dan bawah
+                                                        //  3 = Semua
     private float uniInputY, uniInputX;
     SpriteRenderer sr;
 
     Animator animator;
+
+    public int pearls;
+    public GameObject finishCanvas;
 
 
     void Start()
@@ -40,7 +44,7 @@ public class Player : MonoBehaviour
 
     void Update()
     {
-        
+
         // hanya bisa bergerak kalau tidak sedang lompat
         if (!isJumping)
         {
@@ -70,7 +74,7 @@ public class Player : MonoBehaviour
             canJump = true;
         }
 
-        if (Heart == 0)
+        if (heart == 0)
         {
             DeathCanvas.SetActive(true);
             Destroy(this.gameObject);
@@ -79,36 +83,54 @@ public class Player : MonoBehaviour
 
 
     //Mekanik reverse controll
+    private bool hasSetReverse = false;
+
     void ReverseControl()
     {
-        if (isReverse == true && dirReverse == 1)
+        // Acak sekali saja saat reverse mulai aktif
+        if (isReverse && !hasSetReverse)
         {
-            uniInputY = Input.GetAxis("Vertical");
-            uniInputX = Input.GetAxis("Horizontal") * -1;
-        }
-        if (isReverse == true && dirReverse == 2)
-        {
-            uniInputY = Input.GetAxis("Vertical") * -1;
-            uniInputX = Input.GetAxis("Horizontal");
-        }
-        if (isReverse == true && dirReverse == 3)
-        {
-            uniInputX = Input.GetAxis("Vertical") * -1;
-            uniInputY = Input.GetAxis("Horizontal") * -1;
+            dirReverse = Random.Range(1, 4); // hasil: 1, 2, atau 3
+            hasSetReverse = true;
+            Debug.Log("Reverse aktif, dirReverse = " + dirReverse);
         }
 
+        // Reset jika reverse selesai
+        if (!isReverse)
+        {
+            hasSetReverse = false;
+        }
 
-
-        if (isReverse == false)
+        // Kontrol arah
+        if (isReverse)
+        {
+            if (dirReverse == 1)
+            {
+                uniInputY = Input.GetAxis("Vertical");
+                uniInputX = Input.GetAxis("Horizontal") * -1;
+            }
+            else if (dirReverse == 2)
+            {
+                uniInputY = Input.GetAxis("Vertical") * -1;
+                uniInputX = Input.GetAxis("Horizontal");
+            }
+            else if (dirReverse == 3)
+            {
+                uniInputX = Input.GetAxis("Vertical") * -1;
+                uniInputY = Input.GetAxis("Horizontal") * -1;
+            }
+        }
+        else
         {
             uniInputY = Input.GetAxis("Vertical");
             uniInputX = Input.GetAxis("Horizontal");
         }
     }
 
-    void FixedUpdate() //     NOTEDDDDDDDDDDD     WOYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
+    void FixedUpdate()
     {
         ReverseControl();
+
         float inputY = 0;
         if (transform.position.y <= 3f)
         {
@@ -117,12 +139,12 @@ public class Player : MonoBehaviour
         float inputX = uniInputX;
 
         moveDirection = new Vector3(inputX, inputY, 0f);
+
         if (inputX != 0 || inputY != 0)
         {
             animator.SetBool("walk", true);
         }
-
-        else if (inputX == 0 && inputY == 0)
+        else
         {
             animator.SetBool("walk", false);
         }
@@ -136,6 +158,7 @@ public class Player : MonoBehaviour
             sr.flipX = false;
         }
     }
+
 
     // Mendeteksi kapal terdekat
     GameObject FindNearestShip()
@@ -161,7 +184,7 @@ public class Player : MonoBehaviour
     void StartJump(Vector3 targetPos)
     {
         if (isJumping) return;
-        
+
         animator.SetBool("water", false);
 
         isJumping = true;
@@ -204,27 +227,51 @@ public class Player : MonoBehaviour
         if (collision.CompareTag("SwordFish"))
         {
             Debug.Log("SwordFish");
-            Heart--;
+            heart--;
 
             this.transform.position = checkPoint.transform.position;
+        }
+
+        if (collision.CompareTag("Enemy"))
+        {
+            Debug.Log("Enemy");
+            heart--;
+
         }
 
         if (collision.CompareTag("Portal"))
         {
             Debug.Log("jkshadu");
 
-            if(isReverse == true)
+            if (isReverse == true)
             {
                 isReverse = false;
             }
-            else if(isReverse == false)
+            else if (isReverse == false)
             {
                 isReverse = true;
             }
 
-            dirReverse = 1;
+            int dirReverse = 1;
+            Debug.Log("dir" + dirReverse);
 
             Destroy(collision.gameObject);
         }
+
+        if (collision.CompareTag("Pearl"))
+        {
+            pearls++;
+            Destroy(collision.gameObject);
+
+            Debug.Log("Pearls: " + pearls);
+        }
+
+        if (collision.CompareTag("FinishSatu"))
+        {
+            finishCanvas.SetActive(true);
+            Time.timeScale = 0f;
+        }
     }
+
+
 }

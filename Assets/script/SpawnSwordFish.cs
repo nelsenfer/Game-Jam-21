@@ -16,7 +16,7 @@ public class SpawnSwordFish : MonoBehaviour
 
     void Update()
     {
-        
+
         spawnPos = new Vector3(transform.position.x, 1f, transform.position.z);
     }
 
@@ -31,9 +31,9 @@ public class SpawnSwordFish : MonoBehaviour
             warning.SetActive(false);
 
             // Tunggu waktu acak antara 2 - 4 detik sebelum mengulangi
-            float randomDelay = Random.Range(2f, 4f);
+            float randomDelay = Random.Range(5f, 8f);
             yield return new WaitForSeconds(randomDelay);
-            
+
         }
     }
 
@@ -41,6 +41,6 @@ public class SpawnSwordFish : MonoBehaviour
     {
         Debug.Log("Menembak peluru!");
         Instantiate(swordFishPrefab, spawnPos, transform.rotation);
-        
+
     }
 }

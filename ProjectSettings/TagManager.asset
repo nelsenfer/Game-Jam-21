@@ -6,6 +6,9 @@ TagManager:
   tags:
   - SwordFish
   - Portal
+  - Enemy
+  - Pearl
+  - FinishSatu
   layers:
   - Default
   - TransparentFX
